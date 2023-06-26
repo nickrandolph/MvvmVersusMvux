@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "MvvmVersusMvux",
+  "display": "standalone",
+  "name": "MvvmVersusMvux",
+  "short_name": "MvvmVersusMvux",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

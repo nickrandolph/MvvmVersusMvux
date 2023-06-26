@@ -1,0 +1,58 @@
+<Page x:Class="MvvmVersusMvux.Presentation.MainPage"
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:local="using:MvvmVersusMvux.Presentation"
+	  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	  mc:Ignorable="d"
+	  xmlns:uen="using:Uno.Extensions.Navigation.UI"
+	  xmlns:utu="using:Uno.Toolkit.UI"
+	  xmlns:mvux="using:Uno.Extensions.Reactive.UI"
+	  NavigationCacheMode="Required"
+	  Background="{ThemeResource BackgroundBrush}">
+	<Grid utu:SafeArea.Insets="All">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition />
+		</Grid.RowDefinitions>
+		<utu:NavigationBar Content="Movies" />
+		<TextBox Text="{Binding SearchText, Mode=TwoWay}"
+				 Grid.Row="1" />
+		<Button Content="Search"
+				Grid.Row="2"
+				Command="{Binding Refresh, ElementName=MoviesFeedView}" />
+		<mvux:FeedView Source="{Binding Movies}"
+					   x:Name="MoviesFeedView"
+					   Grid.Row="3">
+			<mvux:FeedView.ValueTemplate>
+				<DataTemplate>
+
+					<ListView ItemsSource="{Binding Data}">
+						<ListView.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Title}" />
+							</DataTemplate>
+						</ListView.ItemTemplate>
+					</ListView>
+				</DataTemplate>
+			</mvux:FeedView.ValueTemplate>
+			<mvux:FeedView.ProgressTemplate>
+				<DataTemplate>
+					<ProgressRing />
+				</DataTemplate>
+			</mvux:FeedView.ProgressTemplate>
+			<mvux:FeedView.ErrorTemplate>
+				<DataTemplate>
+					<TextBlock Text="Error" />
+				</DataTemplate>
+			</mvux:FeedView.ErrorTemplate>
+			<mvux:FeedView.NoneTemplate>
+				<DataTemplate>
+					<TextBlock Text="No Results" />
+				</DataTemplate>
+			</mvux:FeedView.NoneTemplate>
+		</mvux:FeedView>
+	</Grid>
+</Page>

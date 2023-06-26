@@ -1,0 +1,91 @@
+<Page x:Class="MvvmVersusMvux.Presentation.MainPage"
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:local="using:MvvmVersusMvux.Presentation"
+	  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	  mc:Ignorable="d"
+	  xmlns:utu="using:Uno.Toolkit.UI"
+	  NavigationCacheMode="Required"
+	  Background="{ThemeResource BackgroundBrush}">
+
+	<Grid utu:SafeArea.Insets="All">
+		<VisualStateManager.VisualStateGroups>
+			<VisualStateGroup>
+				<VisualState x:Name="Searching">
+					<VisualState.StateTriggers>
+						<StateTrigger IsActive="{Binding IsSearching}" />
+					</VisualState.StateTriggers>
+					<VisualState.Setters>
+						<Setter Target="SearchProgress.Visibility"
+								Value="Visible" />
+					</VisualState.Setters>
+				</VisualState>
+				<VisualState x:Name="Error">
+					<VisualState.StateTriggers>
+						<StateTrigger IsActive="{Binding IsError}" />
+					</VisualState.StateTriggers>
+					<VisualState.Setters>
+						<Setter Target="ErrorText.Visibility"
+								Value="Visible" />
+					</VisualState.Setters>
+
+				</VisualState>
+				<VisualState x:Name="NoResults">
+					<VisualState.StateTriggers>
+						<StateTrigger IsActive="{Binding NoResults}" />
+					</VisualState.StateTriggers>
+					<VisualState.Setters>
+						<Setter Target="NoResultsText.Visibility"
+								Value="Visible" />
+					</VisualState.Setters>
+
+				</VisualState>
+				<VisualState x:Name="Results">
+					<VisualState.StateTriggers>
+						<StateTrigger IsActive="{Binding IsNotSearching}" />
+					</VisualState.StateTriggers>
+					<VisualState.Setters>
+						<Setter Target="ResultsListView.Visibility"
+								Value="Visible" />
+					</VisualState.Setters>
+
+				</VisualState>
+
+			</VisualStateGroup>
+		</VisualStateManager.VisualStateGroups>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition />
+		</Grid.RowDefinitions>
+		<utu:NavigationBar Content="Movies" />
+		<TextBox Text="{Binding SearchText, Mode=TwoWay}"
+				 Grid.Row="1" />
+		<Button Content="Search"
+				Grid.Row="2"
+				Command="{Binding SearchCommand}" />
+		<ListView x:Name="ResultsListView"
+				  Grid.Row="3"
+				  ItemsSource="{Binding Movies}"
+				  Visibility="Collapsed">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Text="{Binding Title}" />
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+		<TextBlock x:Name="ErrorText"
+				   Grid.Row="3"
+				   Visibility="Collapsed"
+				   Text="Error" />
+		<TextBlock x:Name="NoResultsText"
+				   Grid.Row="3"
+				   Visibility="Collapsed"
+				   Text="No Results" />
+		<ProgressRing x:Name="SearchProgress"
+					  Visibility="Collapsed"
+					  Grid.Row="3" />
+	</Grid>
+</Page>

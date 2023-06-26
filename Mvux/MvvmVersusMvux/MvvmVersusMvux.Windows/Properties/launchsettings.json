@@ -1,0 +1,10 @@
+{
+  "profiles": {
+	"MvvmVersusMvux.Windows (Package)": {
+	  "commandName": "MsixPackage"
+	},
+	"MvvmVersusMvux.Windows (Unpackaged)": {
+	  "commandName": "Project"
+	}
+  }
+}
