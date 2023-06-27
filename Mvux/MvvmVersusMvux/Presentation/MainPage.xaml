@@ -20,6 +20,9 @@
 		<utu:NavigationBar Content="Movies" />
 		<TextBox Text="{Binding SearchText, Mode=TwoWay}"
 				 Grid.Row="1" />
+		<Button Content="Search"
+				Grid.Row="2"
+				Command="{Binding Refresh, ElementName=MoviesFeedView}" />
 		<mvux:FeedView Source="{Binding Movies}"
 					   x:Name="MoviesFeedView"
 					   Grid.Row="3">
