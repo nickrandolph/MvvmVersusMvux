@@ -1,3 +1,6 @@
+using Microsoft.UI.Xaml.Data;
+using System.Collections.ObjectModel;
+using Windows.Foundation;
 using Windows.Media.Protection.PlayReady;
 
 namespace MvvmVersusMvux.Presentation
@@ -7,7 +10,7 @@ namespace MvvmVersusMvux.Presentation
         private IApiClient _client;
 
         [ObservableProperty]
-        private IReadOnlyList<Result> _movies;
+        private IncrementalList<Result> _movies;
 
         [ObservableProperty]
         private string? _searchText;
@@ -38,8 +41,16 @@ namespace MvvmVersusMvux.Presentation
                 IsSearching = true;
                 IsError = false;
 
-                var moviesResult = await _client.GetMovies(SearchText);
-                Movies = moviesResult.Results;
+                var moviesResult = await _client.GetMovies(SearchText,1);
+                Movies = new IncrementalList<Result>();
+                Movies.AddRange(moviesResult.Results);
+                Movies.HasMoreItems = moviesResult.TotalResults > moviesResult.Results.Count;
+                Movies.PageNumber = 1;
+                Movies.LoadCallback = async () =>
+                {
+                    var movies = await _client.GetMovies(SearchText, ++Movies.PageNumber);
+                    return (movies.Results, Movies.Count + movies.Results.Count < movies.TotalResults);
+                };
                 NoResults = Movies.Count == 0;
             }
             catch
@@ -50,6 +61,42 @@ namespace MvvmVersusMvux.Presentation
             {
                 IsSearching = false;
             }
+        }
+    }
+
+    public class IncrementalList<T> : ObservableCollection<T>, ISupportIncrementalLoading
+    {
+        public Func<Task<(IEnumerable<T> Results, bool MoreItems)>>? LoadCallback { get; set; }
+
+        public bool HasMoreItems { get; set; }
+        public int PageNumber { get; set; }
+
+        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
+        {
+            return InternalLoadMoreItemsAsync((int)count).AsAsyncOperation();
+            //return Task.Run(async () =>
+            //{
+            //    if (LoadCallback is null)
+            //    {
+            //        return new LoadMoreItemsResult();
+            //    }
+            //    var results = await LoadCallback();
+            //    this.AddRange(results.Results);
+            //    HasMoreItems = results.MoreItems;
+            //    return new LoadMoreItemsResult((uint)results.Results.Count());
+            //}).AsAsyncOperation();
+        }
+
+        private async Task<LoadMoreItemsResult> InternalLoadMoreItemsAsync(int count)
+        {
+            if (LoadCallback is null)
+            {
+                return new LoadMoreItemsResult();
+            }
+            var results = await LoadCallback();
+            this.AddRange(results.Results);
+            HasMoreItems = results.MoreItems;
+            return new LoadMoreItemsResult((uint)results.Results.Count());
         }
     }
 }
