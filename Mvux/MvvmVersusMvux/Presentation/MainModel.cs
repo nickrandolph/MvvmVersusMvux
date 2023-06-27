@@ -13,11 +13,12 @@ namespace MvvmVersusMvux.Presentation
         public IState<string> SearchText => State<string>.Empty(this);
 
         //public IListFeed<Result> Movies => 
-        //    SearchText.SelectAsync(
-        //        async (search,ct) => (await _client.GetMovies(search, ct)).Results).AsListFeed();
+        //    ListFeed.Async(
+        //        async ct => (await _client.GetMovies(await SearchText??string.Empty, ct)).Results);
 
-        public IListFeed<Result> Movies => 
-            Feed.Async(
-                async ct => (await _client.GetMovies(await SearchText??string.Empty, ct)).Results).AsListFeed();
+        public IListFeed<Result> Movies =>
+            SearchText.SelectAsync(
+                async (search, ct) => (await _client.GetMovies(search, ct)).Results).AsListFeed();
+
     }
 }
