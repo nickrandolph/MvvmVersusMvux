@@ -28,14 +28,28 @@
 					   Grid.Row="3">
 			<mvux:FeedView.ValueTemplate>
 				<DataTemplate>
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition />
+						</Grid.RowDefinitions>
+						<TextBlock x:Name="ResultsCountText">
+							<Run Text="Results: " />
+							<Run Text="{Binding Data.Count}" />
+							<Run Text="/" />
+							<Run Text="{Binding Parent.TotalResults}" />
+						</TextBlock>
 
-					<ListView ItemsSource="{Binding Data}">
-						<ListView.ItemTemplate>
-							<DataTemplate>
-								<TextBlock Text="{Binding Title}" />
-							</DataTemplate>
-						</ListView.ItemTemplate>
-					</ListView>
+						<ListView ItemsSource="{Binding Data}"
+								  x:Name="MoviesListView"
+								  Grid.Row="1">
+							<ListView.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Title}" />
+								</DataTemplate>
+							</ListView.ItemTemplate>
+						</ListView>
+					</Grid>
 				</DataTemplate>
 			</mvux:FeedView.ValueTemplate>
 			<mvux:FeedView.ProgressTemplate>
