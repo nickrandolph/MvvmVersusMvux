@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml.Data;
 using System.Collections.ObjectModel;
+using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Media.Protection.PlayReady;
 
@@ -10,7 +11,7 @@ namespace MvvmVersusMvux.Presentation
         private IApiClient _client;
 
         [ObservableProperty]
-        private IncrementalList<Result> _movies;
+        private IncrementalObservableCollection<Result> _movies;
 
         [ObservableProperty]
         private string? _searchText;
@@ -31,7 +32,7 @@ namespace MvvmVersusMvux.Presentation
             IApiClient client)
         {
             _client = client;
-        } 
+        }
 
         [RelayCommand]
         public async Task Search()
@@ -41,17 +42,18 @@ namespace MvvmVersusMvux.Presentation
                 IsSearching = true;
                 IsError = false;
 
-                var moviesResult = await _client.GetMovies(SearchText,1);
-                Movies = new IncrementalList<Result>();
-                Movies.AddRange(moviesResult.Results);
-                Movies.HasMoreItems = moviesResult.TotalResults > moviesResult.Results.Count;
-                Movies.PageNumber = 1;
-                Movies.LoadCallback = async () =>
+                var moviesResult = await _client.GetMovies(SearchText, 1);
+                var movies = new IncrementalObservableCollection<Result>();
+                movies.AddRange(moviesResult.Results);
+                movies.TotalResults = moviesResult.TotalResults ?? 0;
+                movies.PageNumber = 1;
+                movies.LoadCallback = async () =>
                 {
-                    var movies = await _client.GetMovies(SearchText, ++Movies.PageNumber);
-                    return (movies.Results, Movies.Count + movies.Results.Count < movies.TotalResults);
+                    var moreMovies = await _client.GetMovies(SearchText, ++Movies.PageNumber);
+                    return (moreMovies.Results, moreMovies.TotalResults ?? 0);
                 };
-                NoResults = Movies.Count == 0;
+                NoResults = movies.Count == 0;
+                Movies = movies;
             }
             catch
             {
@@ -64,30 +66,21 @@ namespace MvvmVersusMvux.Presentation
         }
     }
 
-    public class IncrementalList<T> : ObservableCollection<T>, ISupportIncrementalLoading
+    public class IncrementalObservableCollection<T> : ObservableCollection<T>, ISupportIncrementalLoading
     {
-        public Func<Task<(IEnumerable<T> Results, bool MoreItems)>>? LoadCallback { get; set; }
+        public Func<Task<(IEnumerable<T> Results, int TotalResults)>>? LoadCallback { get; set; }
 
-        public bool HasMoreItems { get; set; }
+        public bool HasMoreItems => Count < TotalResults;
+
         public int PageNumber { get; set; }
 
-        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
-        {
-            return InternalLoadMoreItemsAsync((int)count).AsAsyncOperation();
-            //return Task.Run(async () =>
-            //{
-            //    if (LoadCallback is null)
-            //    {
-            //        return new LoadMoreItemsResult();
-            //    }
-            //    var results = await LoadCallback();
-            //    this.AddRange(results.Results);
-            //    HasMoreItems = results.MoreItems;
-            //    return new LoadMoreItemsResult((uint)results.Results.Count());
-            //}).AsAsyncOperation();
-        }
+        public int TotalResults { get; set; }
 
-        private async Task<LoadMoreItemsResult> InternalLoadMoreItemsAsync(int count)
+
+        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
+            => InternalLoadMoreItemsAsync().AsAsyncOperation();
+
+        private async Task<LoadMoreItemsResult> InternalLoadMoreItemsAsync()
         {
             if (LoadCallback is null)
             {
@@ -95,7 +88,8 @@ namespace MvvmVersusMvux.Presentation
             }
             var results = await LoadCallback();
             this.AddRange(results.Results);
-            HasMoreItems = results.MoreItems;
+            TotalResults = results.TotalResults;
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(TotalResults)));
             return new LoadMoreItemsResult((uint)results.Results.Count());
         }
     }

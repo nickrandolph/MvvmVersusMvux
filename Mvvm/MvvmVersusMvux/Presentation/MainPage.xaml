@@ -48,6 +48,8 @@
 					<VisualState.Setters>
 						<Setter Target="ResultsListView.Visibility"
 								Value="Visible" />
+						<Setter Target="ResultsCountText.Visibility"
+								Value="Visible" />
 					</VisualState.Setters>
 
 				</VisualState>
@@ -63,9 +65,16 @@
 		<utu:NavigationBar Content="Movies" />
 		<TextBox Text="{Binding SearchText, Mode=TwoWay}"
 				 Grid.Row="1" />
-		<Button Content="Search"
-				Grid.Row="2"
-				Command="{Binding SearchCommand}" />
+		<StackPanel Grid.Row="2">
+			<Button Content="Search"
+					Command="{Binding SearchCommand}" />
+			<TextBlock x:Name="ResultsCountText" Visibility="Collapsed">
+				<Run Text="Results: " />
+				<Run Text="{Binding Movies.Count}" />
+				<Run Text="/" />
+				<Run Text="{Binding Movies.TotalResults}" />
+			</TextBlock>
+		</StackPanel>
 		<ListView x:Name="ResultsListView"
 				  Grid.Row="3"
 				  ItemsSource="{Binding Movies}"
